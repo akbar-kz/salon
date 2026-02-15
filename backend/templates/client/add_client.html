@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'client/add_client_style.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="main-content">
+  <div class="page-header">
+    <h1 class="page-title">Mijoz Qo'shish</h1>
+    <p class="page-subtitle">Yangi mijoz yoki bron qilish</p>
+  </div>
+
+  <div class="form-container">
+
+    {% if error %}
+      <div class="alert alert-error" id="error-alert" style="display:flex;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="error-text">{{ error }}</span>
+      </div>
+    {% else %}
+      <div class="alert alert-error" id="error-alert" style="display:none;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="error-text"></span>
+      </div>
+    {% endif %}
+
+    {% if success %}
+      <div class="alert alert-success" id="success-alert" style="display:flex;">
+        <i class="fas fa-check-circle"></i>
+        <span id="success-text">{{ success }}</span>
+      </div>
+    {% else %}
+      <div class="alert alert-success" id="success-alert" style="display:none;">
+        <i class="fas fa-check-circle"></i>
+        <span id="success-text"></span>
+      </div>
+    {% endif %}
+
+    <form method="post" id="client-form" novalidate>
+      {% csrf_token %}
+
+      <input type="hidden" name="price_type" id="price_type" value="percent">
+
+      <div class="form-group full-width">
+        <label>
+          <i class="fas fa-user"></i>
+          Ism Familiya
+        </label>
+        <input
+          type="text"
+          id="client-name"
+          name="client_name"
+          placeholder="Masalan: Alisher Karimov"
+          required
+        >
+      </div>
+
+      <div class="form-group full-width">
+        <label>
+          <i class="fas fa-scissors"></i>
+          Xizmat
+        </label>
+        <input
+          type="text"
+          id="client-service"
+          name="service"
+          placeholder="Masalan: Soch olish"
+          required
+        >
+      </div>
+
+      <div class="price-section full-width">
+        <div class="price-header">
+          <label>
+            <i class="fas fa-money-bill-wave"></i>
+            Narx ma'lumotlari
+          </label>
+          <div class="price-type-toggle">
+            <button
+              type="button"
+              class="price-type-btn active"
+              data-type="percent"
+              id="btn-percent"
+            >
+              <i class="fas fa-percent"></i>
+              Foiz
+            </button>
+            <button
+              type="button"
+              class="price-type-btn"
+              data-type="amount"
+              id="btn-amount"
+            >
+              <i class="fas fa-coins"></i>
+              Summa
+            </button>
+          </div>
+        </div>
+
+        <div class="price-inputs">
+          <div class="form-group">
+            <label>
+              <i class="fas fa-hand-holding-usd"></i>
+              Jami Narxi
+            </label>
+            <div class="input-with-icon">
+              <input
+                type="number"
+                id="client-price"
+                name="total_price"
+                placeholder="50000"
+                min="0"
+                step="1"
+                required
+              >
+              <span class="input-icon">so'm</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <i class="fas fa-wallet"></i>
+              Menga tegishli
+            </label>
+            <div class="input-with-icon">
+              {# my_value = либо % (0..100), либо сумма (0..total) #}
+              <input
+                type="number"
+                id="client-myvalue"
+                name="my_value"
+                placeholder="60"
+                min="0"
+                step="1"
+                required
+              >
+              <span class="input-icon" id="price-unit">%</span>
+            </div>
+          </div>
+        </div>
+
+        {# опционально: live-preview #}
+        <div style="margin-top:10px; opacity:.85;">
+          <small id="my-preview"></small>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>
+            <i class="fas fa-calendar-alt"></i>
+            Sana
+          </label>
+          <input
+            type="date"
+            id="client-date"
+            name="date"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label>
+            <i class="fas fa-clock"></i>
+            Vaqt
+          </label>
+          <input
+            type="time"
+            id="client-time"
+            name="time"
+            required
+          >
+        </div>
+      </div>
+
+      {# Если ты реально показываешь занятые времена через API - оставь, иначе можно убрать #}
+      <div id="occupied-times-section" class="occupied-times-section" style="display:none;">
+        <label>
+          <i class="fas fa-exclamation-triangle"></i>
+          Band vaqtlar:
+        </label>
+        <div class="occupied-times" id="occupied-times"></div>
+      </div>
+
+      <div class="form-buttons">
+        <button class="btn btn-primary" type="submit" name="action" value="client">
+          <i class="fas fa-check"></i>
+          <span>Mijoz qo'shish</span>
+        </button>
+
+        <button class="btn btn-secondary" type="submit" name="action" value="booking">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bron qilish</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ---- Helpers for alerts ----
+  function showError(msg) {
+    const box = document.getElementById("error-alert");
+    const text = document.getElementById("error-text");
+    text.textContent = msg;
+    box.style.display = "flex";
+    const ok = document.getElementById("success-alert");
+    if (ok) ok.style.display = "none";
+  }
+
+  function hideError() {
+    const box = document.getElementById("error-alert");
+    if (box) box.style.display = "none";
+  }
+
+  // ---- Inputs ----
+  const totalInput = document.getElementById("client-price");
+  const myValueInput = document.getElementById("client-myvalue");
+  const priceTypeInput = document.getElementById("price_type");
+  const unitSpan = document.getElementById("price-unit");
+
+  const btnPercent = document.getElementById("btn-percent");
+  const btnAmount = document.getElementById("btn-amount");
+
+  const preview = document.getElementById("my-preview");
+  const form = document.getElementById("client-form");
+
+  function setActiveButton(type) {
+    if (type === "percent") {
+      btnPercent.classList.add("active");
+      btnAmount.classList.remove("active");
+    } else {
+      btnAmount.classList.add("active");
+      btnPercent.classList.remove("active");
+    }
+  }
+
+  function clampPercent() {
+    let v = Number(myValueInput.value || 0);
+    if (v < 0) v = 0;
+    if (v > 100) v = 100;
+    myValueInput.value = v;
+  }
+
+  function clampAmountToTotal() {
+    const total = Number(totalInput.value || 0);
+    let v = Number(myValueInput.value || 0);
+    if (v < 0) v = 0;
+    if (v > total) v = total;
+    myValueInput.value = v;
+  }
+
+  function computeMyMoney() {
+    const total = Number(totalInput.value || 0);
+    const v = Number(myValueInput.value || 0);
+
+    if (priceTypeInput.value === "percent") {
+      return Math.floor(total * v / 100);
+    }
+    return v;
+  }
+
+  function updatePreview() {
+    const total = Number(totalInput.value || 0);
+    const myMoney = computeMyMoney();
+
+    if (!preview) return;
+
+    if (!total) {
+      preview.textContent = "";
+      return;
+    }
+    preview.textContent = `Menga tegishli: ${myMoney.toLocaleString()} so'm`;
+  }
+
+  function setPriceType(type) {
+    priceTypeInput.value = type;
+    setActiveButton(type);
+
+    if (type === "percent") {
+      unitSpan.textContent = "%";
+
+      // если ранее была сумма, а сейчас проценты — попробуем конвертировать обратно
+      const total = Number(totalInput.value || 0);
+      const amount = Number(myValueInput.value || 0);
+      if (total > 0) {
+        const p = Math.round((amount / total) * 100);
+        myValueInput.value = isFinite(p) ? p : 60;
+      } else if (myValueInput.value === "") {
+        myValueInput.value = 60;
+      }
+      clampPercent();
+    } else {
+      unitSpan.textContent = "so'm";
+
+      // конвертируем проценты в сумму
+      const total = Number(totalInput.value || 0);
+      const percent = Number(myValueInput.value || 0);
+      if (total > 0) {
+        myValueInput.value = Math.floor(total * percent / 100);
+      } else {
+        myValueInput.value = "";
+      }
+      clampAmountToTotal();
+    }
+
+    updatePreview();
+  }
+
+  // ---- Events ----
+  btnPercent.addEventListener("click", () => setPriceType("percent"));
+  btnAmount.addEventListener("click", () => setPriceType("amount"));
+
+  totalInput.addEventListener("input", () => {
+    hideError();
+    if (priceTypeInput.value === "amount") clampAmountToTotal();
+    updatePreview();
+  });
+
+  myValueInput.addEventListener("input", () => {
+    hideError();
+    if (priceTypeInput.value === "percent") clampPercent();
+    else clampAmountToTotal();
+    updatePreview();
+  });
+
+  form.addEventListener("submit", (e) => {
+    // front validation (не заменяет backend validation)
+    const name = document.getElementById("client-name").value.trim();
+    const service = document.getElementById("client-service").value.trim();
+    const date = document.getElementById("client-date").value;
+    const time = document.getElementById("client-time").value;
+
+    const total = Number(totalInput.value || 0);
+    const v = Number(myValueInput.value || 0);
+
+    if (!name || !service || !date || !time) {
+      e.preventDefault();
+      showError("Iltimos, barcha maydonlarni to'ldiring.");
+      return;
+    }
+
+    if (total <= 0) {
+      e.preventDefault();
+      showError("Jami narx 0 dan katta bo'lishi kerak.");
+      return;
+    }
+
+    if (priceTypeInput.value === "percent") {
+      if (v < 0 || v > 100) {
+        e.preventDefault();
+        showError("Foiz 0-100 oralig'ida bo'lishi kerak.");
+        return;
+      }
+    } else {
+      if (v < 0 || v > total) {
+        e.preventDefault();
+        showError("Summa jami narxdan katta bo'la olmaydi.");
+        return;
+      }
+    }
+  });
+
+  // ---- init ----
+  setPriceType("percent");
+</script>
+{% endblock content %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Salon Pro - Daromad{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'income/income_style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-chart-line"></i>
+            Daromad Hisobi
+        </h1>
+        <p class="page-subtitle">Sizning daromadingiz va arenda hisoblari</p>
+    </div>
+
+    <!-- Today Stats -->
+    <div class="today-section">
+        <div class="today-title">
+            <i class="fas fa-calendar-day"></i>
+            <span>Bugungi Daromad</span>
+        </div>
+        <div class="today-stats">
+            <div class="today-stat">
+                <div class="today-stat-label">Jami</div>
+                <div class="today-stat-value">{{ today_total }} so'm</div>
+            </div>
+            <div class="today-stat">
+                <div class="today-stat-label">Sizga</div>
+                <div class="today-stat-value">{{ today_mine }} so'm</div>
+            </div>
+            <div class="today-stat">
+                <div class="today-stat-label">Arenda</div>
+                <div class="today-stat-value">{{ today_rent }} so'm</div>
+            </div>
+            <div class="today-stat">
+                <div class="today-stat-label">Mijozlar</div>
+                <div class="today-stat-value">{{ today_clients }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Time Stats -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-icon">💵</div>
+            <div class="stat-label">Jami Daromad</div>
+            <div class="stat-value">{{ total_income }}</div>
+            <div class="stat-percent">Barcha mijozlar</div>
+        </div>
+
+        <div class="stat-card mine">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Sizning ulushingiz</div>
+            <div class="stat-value">{{ my_income }}</div>
+            <div class="stat-percent">{{ my_percent }}%</div>
+        </div>
+
+        <div class="stat-card rent">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-label">Arenda</div>
+            <div class="stat-value">{{ rent_income }}</div>
+            <div class="stat-percent">{{ rent_percent }}%</div>
+        </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown-card">
+        <div class="breakdown-title">
+            <i class="fas fa-chart-pie"></i>
+            Daromad Taqsimoti
+        </div>
+
+        <div class="breakdown-bar">
+            <div class="bar-segment bar-mine" style="width: {{ bar_mine_width }}%;"></div>
+            <div class="bar-segment bar-rent" style="width: {{ bar_rent_width }}%;"></div>
+        </div>
+
+        <div class="breakdown-legend">
+            <div class="legend-item">
+                <div class="legend-color mine"></div>
+                <span>Sizning ulushingiz ({{ my_percent }}%)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color rent"></div>
+                <span>Arenda ({{ rent_percent }}%)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search (GET form) -->
+    <div class="search-section">
+        <div class="search-title">
+            <i class="fas fa-search"></i>
+            Qidirish
+        </div>
+
+        <form class="search-grid" method="get" action="">
+            <input
+                type="text"
+                class="search-input"
+                name="name"
+                value="{{ q_name }}"
+                placeholder="Ism familiya bo'yicha qidirish..."
+            >
+            <input
+                type="date"
+                class="search-input"
+                name="date"
+                value="{{ q_date }}"
+            >
+            <button class="search-btn" type="submit">
+                <i class="fas fa-search"></i>
+                Qidirish
+            </button>
+            <a class="clear-btn" href="{% url 'income' %}">
+                <i class="fas fa-times"></i>
+                Tozalash
+            </a>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-title">
+            <i class="fas fa-table"></i>
+            Mijozlar Ro'yxati
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Mijoz</th>
+                        <th><i class="fas fa-scissors"></i> Xizmat</th>
+                        <th><i class="fas fa-calendar"></i> Sana</th>
+                        <th><i class="fas fa-money-bill-wave"></i> Jami</th>
+                        <th><i class="fas fa-wallet"></i> Sizga</th>
+                        <th><i class="fas fa-building"></i> Arenda</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clients %}
+                        <tr>
+                            <td>{{ c.username }}</td>
+                            <td>{{ c.service }}</td>
+                            <td>{{ c.date|date:"d/m/Y" }} {{ c.time|time:"H:i" }}</td>
+                            <td>{{ c.price }}</td>
+                            <td>{{ c.my_price }}</td>
+                            <td>{{ c.rent_price }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center;">Hozircha ma'lumot yo'q</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Salon Pro{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/homepage_style.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">Bosh Sahifa</h1>
+        <p class="page-subtitle">Assalomu alaykum! Mijozlaringizni boshqaring</p>
+    </div>
+
+    <div class="main-cards">
+        <a class="main-card" href="#">
+            <div class="main-card-icon"><i class="fas fa-users"></i></div>
+            <div class="main-card-title">Kelgan Mijozlar</div>
+            <div class="main-card-count">{{ clients_count }}</div>
+            <div class="main-card-desc">Barcha mijozlar ro'yxati</div>
+        </a>
+
+        <a class="main-card" href="#">
+            <div class="main-card-icon"><i class="fas fa-calendar-check"></i></div>
+            <div class="main-card-title">Bron Qilingan</div>
+            <div class="main-card-count">{{ bookings_count }}</div>
+            <div class="main-card-desc">Kutilayotgan mijozlar</div>
+        </a>
+    </div>
+</div>
+
+{% endblock content %}
