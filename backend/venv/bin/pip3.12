@@ -1,4 +1,4 @@
-#!/Users/maraimovelyor/Documents/GitHub/salon/venv/bin/python
+#!/home/user/Documents/GitHub/salon/backend/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
