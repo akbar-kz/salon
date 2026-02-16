@@ -14,8 +14,6 @@ export default function Masters() {
   const showClients = () => setCurrentView("clients");
   const showBookings = () => setCurrentView("bookings");
 
-  
-
   return (
     <div>
       <Navbar version="masters" />

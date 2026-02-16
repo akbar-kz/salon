@@ -13,44 +13,12 @@ export default function Navbar({ version = "default" }) {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
   const [active, setActive] = useState("home");
-  const [loading, setLoading] = useState(true);
 
   const { lang, setLang, t } = useTranslation();
 
   const langChange = (e) => {
     setLang(e.target.checked ? "ru" : "uz");
   };
-
-  const [data, setData] = useState([])
-
-  useEffect(() => {
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcxMTQ3NTE2LCJpYXQiOjE3NzExNDM5MTYsImp0aSI6ImIyYjUyNTY3ZWNjNzQxMWE4Y2M5MzQxMmM0ZmE5YWM3IiwidXNlcl9pZCI6IjEifQ.ZSvv-SP5WoEWbc56qw3dr4ieqvnGFakvmMaZMZxDCj4";
-    
-    fetch("http://127.0.0.1:8000/api/clients/", {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json"
-    }
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then(responseData => {
-      console.log("API javob:", responseData); // ✅ Avval console.log qiling
-      
-      // Agar API object qaytarsa va ichida array bo'lsa:
-      
-        setData(responseData.results); // ✅ results ichidagi arrayni oling
-      
-    })
-    .catch(error => {
-      console.error("Error:", error);
-    });
-}, []);
 
   return (
     <div style={{ width: "100%", height: "80px" }}>
@@ -194,13 +162,8 @@ export default function Navbar({ version = "default" }) {
                   <div
                     className={`profil_modal_open ${open_profile ? "active" : ""}`}
                   >
-                    
                     <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--ink)" }}>
-                      {
-    data.map((item, index) => (
-      <span key={index}>{item.username} </span>
-    ))
-  }
+                      User_name
                     </span>
                     <hr style={{ marginTop: "10px", borderColor: "var(--border)" }} />
                     <div className="profil_dashboard">
